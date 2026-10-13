@@ -1,0 +1,13 @@
+google-adk>=2.0
+google-genai
+fastapi
+uvicorn[standard]
+python-multipart
+sqlalchemy>=2.0
+aiosqlite
+python-dotenv
+twilio
+requests
+pydantic>=2
+pytest
+httpx
