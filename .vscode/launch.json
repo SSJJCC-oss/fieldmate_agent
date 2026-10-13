@@ -1,0 +1,30 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "FieldMate: terminal chat (with trace)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "scripts.chat",
+      "args": ["--trace"],
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "FieldMate: web server (for WhatsApp)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["app.main:app", "--reload", "--port", "8080"],
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "FieldMate: seed database (reset)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "scripts.seed",
+      "args": ["--reset"],
+      "console": "integratedTerminal"
+    }
+  ]
+}
