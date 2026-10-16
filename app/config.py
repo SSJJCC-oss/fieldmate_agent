@@ -17,7 +17,7 @@ def _flag(name: str, default: str) -> bool:
 
 class Settings:
     # The "brain". Google ADK reads GOOGLE_API_KEY from the environment itself.
-    model: str = os.environ.get("FIELDMATE_MODEL", "gemini-2.5-flash")
+    model: str = os.environ.get("FIELDMATE_MODEL", "gemini-3.8-flash")
 
     # Where the CRM lives. SQLite (a single file) is perfect for learning;
     # switch to Postgres later by changing only this URL.

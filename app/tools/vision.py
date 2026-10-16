@@ -60,11 +60,20 @@ def _safe_path(image_path: str) -> Path:
     return p
 
 
-def _call_gemini(path: Path) -> Extraction:
+def _client():
+    """Gemini client that retries automatically when Google is busy (429/503)."""
     from google import genai
     from google.genai import types
 
-    client = genai.Client()  # reads GOOGLE_API_KEY from the environment
+    retry = types.HttpRetryOptions(attempts=5, initial_delay=2, max_delay=30,
+                                   http_status_codes=[429, 500, 503, 504])
+    return genai.Client(http_options=types.HttpOptions(retry_options=retry))  # reads GOOGLE_API_KEY
+
+
+def _call_gemini(path: Path) -> Extraction:
+    from google.genai import types
+
+    client = _client()
     mime = mimetypes.guess_type(path.name)[0] or "image/jpeg"
     response = client.models.generate_content(
         model=settings.model,
@@ -160,11 +169,10 @@ def link_document(document_id: int, contact_id: int = 0, deal_id: int = 0) -> di
 def transcribe_audio(path: str) -> str:
     """Voice note -> text. Not a tool: the pipeline calls it BEFORE the agents
     run, so to the agents a voice note looks exactly like a typed message."""
-    from google import genai
     from google.genai import types
 
     p = Path(path)
-    client = genai.Client()
+    client = _client()
     mime = mimetypes.guess_type(p.name)[0] or "audio/ogg"
     response = client.models.generate_content(
         model=settings.model,

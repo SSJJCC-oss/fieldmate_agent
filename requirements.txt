@@ -3,7 +3,7 @@ google-genai
 fastapi
 uvicorn[standard]
 python-multipart
-sqlalchemy>=2.0
+sqlalchemy[asyncio]>=2.0
 aiosqlite
 python-dotenv
 twilio

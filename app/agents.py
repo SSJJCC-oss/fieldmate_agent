@@ -21,10 +21,20 @@ Each specialist has a short instruction and only the tools it needs, so it is
 cheaper, easier to test, and harder to confuse.
 """
 from google.adk.agents import Agent
+from google.adk.models.google_llm import Gemini
 from google.adk.tools.agent_tool import AgentTool
+from google.genai import types
 
 from .config import settings
 from .tools import crm, followup, insights, vision
+
+# One model object shared by all five agents. If Google replies "busy" (503)
+# or "too many requests" (429), it retries automatically, waiting a little
+# longer each time (2s, 4s, 8s... up to 30s), instead of failing at once.
+RETRY = types.HttpRetryOptions(
+    attempts=5, initial_delay=2, max_delay=30, http_status_codes=[429, 500, 503, 504]
+)
+MODEL = Gemini(model=settings.model, retry_options=RETRY)
 
 COMMON_RULES = """
 Rules that always apply:
@@ -37,7 +47,7 @@ Rules that always apply:
 
 intake_agent = Agent(
     name="intake_agent",
-    model=settings.model,
+    model=MODEL,
     description=(
         "Keeps the customer records: creates and finds contacts and properties, "
         "opens and moves jobs through the pipeline, logs interactions, creates "
@@ -66,7 +76,7 @@ Typical work:
 
 vision_agent = Agent(
     name="vision_agent",
-    model=settings.model,
+    model=MODEL,
     description=(
         "Reads photos: appliance data plates, supplier receipts, handwritten notes "
         "and job-site photos. Saves what it reads onto the right customer or job."
@@ -93,7 +103,7 @@ The request will contain "[photo: <path>]" and usually a hint like "aoife's boil
 
 insights_agent = Agent(
     name="insights_agent",
-    model=settings.model,
+    model=MODEL,
     description=(
         "Looks across the whole CRM: stuck quotes, unbilled jobs, services due, "
         "customers drifting away, due reminders. Writes the morning briefing."
@@ -112,7 +122,7 @@ If there's nothing to report, say so in one line. No greetings, no fluff.""",
 
 followup_agent = Agent(
     name="followup_agent",
-    model=settings.model,
+    model=MODEL,
     description=(
         "Writes personal messages to customers (quote follow-ups, service reminders, "
         "replies to enquiries, win-back messages) and puts them in the approval queue. "
@@ -133,7 +143,7 @@ If queue_for_approval says the customer opted out, respect it and say so.
 
 root_agent = Agent(
     name="router",
-    model=settings.model,
+    model=MODEL,
     description="FieldMate's front desk. Talks to the business owner on WhatsApp.",
     instruction=f"""You are FieldMate, the WhatsApp back-office assistant for {settings.business_name}.
 You talk ONLY to the owner, who is busy and on site: keep replies short (WhatsApp, not email).
